@@ -1,0 +1,16 @@
+server:
+  port: 8080 #eurekay也是一个web项目，需要在Servlet容器中运行，故也需要占用一个端口号
+eureka:
+  instance:
+    hostname: localhost #eureka实例ip
+  client:
+    register-with-eureka: false #防止自己注册自己
+    fetch-registry: false #注册中心的职责就是维护服务实例，它并不需要去检索服务，所以设置成false
+    service-url:
+      defaultZone: http://${eureka.instance.hostname}:${server.port}/eureka #默认注册中心地址
+  server:
+    enable-self-preservation: false #测试时关闭自我保护机制，保证不可用服务及时踢出
+spring:
+  application:
+    name: car-eureka  #应用名称，一般为项目名
+
