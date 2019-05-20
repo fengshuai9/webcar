@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<!-- saved from url=(0049)http://passport.ziroom.com/index.php?r=user/index -->
+<html lang="en" xmlns:th="http://www.springframework.org/schema/jdbc" xmlns:border-width="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/javascript" src="/js/jquery.min.js"></script>
+    <title>二手车网站</title>
+    <!-- 时间 -->
+    <link rel="stylesheet" href="/js3/bootstrap-datetimepicker/css/bootstrap-datetimepicker.css">
+    <script type="text/javascript" src="/js3/bootstrap-datetimepicker/js/bootstrap-datetimepicker.js"></script>
+    <script type="text/javascript" src="/js3/bootstrap-datetimepicker/js/locales/bootstrap-datetimepicker.zh-CN.js"></script>
+    <!-- 引入jquery -->
+    <script type="text/javascript" src="/js3/jquery-1.9.1.min.js"></script>
+    <!-- 引入bootstrap的css、js -->
+    <link rel="stylesheet" href="/js3/bootstrap3/css/bootstrap.css">
+    <script type="text/javascript" src="/js3/bootstrap3/js/bootstrap.js"></script>
+    <!-- 引入tree的js、css -->
+    <link rel="stylesheet" href="/js3/bootstrap-treeview/bootstrap-treeview.min.css">
+    <script type="text/javascript" src="/js3/bootstrap-treeview/bootstrap-treeview.min.js"></script>
+    <!-- 引入选项卡的js、css -->
+    <link rel="stylesheet" href="/js3/bootStrap-addTabs/bootstrap.addtabs.css">
+    <script type="text/javascript" src="/js3/bootStrap-addTabs/bootstrap.addtabs.min.js"></script>
+    <!-- 引入table的css、js -->
+    <link rel="stylesheet" href="/js3/bootstrap-table/bootstrap-table.css">
+    <script type="text/javascript" src="/js3/bootstrap-table/bootstrap-table.js"></script>
+    <script type="text/javascript" src="/js3/bootstrap-table/locale/bootstrap-table-zh-CN.js"></script>
+    <!-- 引入删除提示框 -->
+    <script type="text/javascript" src="/js3/bootbox/bootbox.min.js"></script>
+    <!-- 引入时间的css、js -->
+    <link rel="stylesheet" href="/js3/bootstrap-datetimepicker/css/bootstrap-datetimepicker.css">
+    <script  src="/js3/bootstrap-datetimepicker/js/bootstrap-datetimepicker.js"></script>
+    <script  src="/js3/bootstrap-datetimepicker/js/locales/bootstrap-datetimepicker.zh-CN.js"></script>
+    <!-- 引入文件上传的css、js -->
+    <link rel="stylesheet" href="/js3/bootstrap-fileinput/css/fileinput.css">
+    <script type="text/javascript" src="/js3/bootstrap-fileinput/js/fileinput.js"></script>
+    <script type="text/javascript" src="/js3/bootstrap-fileinput/js/locales/zh.js"></script>
+    <style type="text/css">
+        .myrow{
+            margin-bottom:10px
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-default" role="navigation">
+        <div class="navbar-header">
+            <a class="navbar-brand" href="#">
+                <img src="//x.autoimg.cn/2scimg/pc/web/20180409/2sclogo@2x.png" width="150" height="43"></a>
+        </div>
+            <ul class="nav navbar-nav">
+                <li><a href="https://www.che168.com/china">首页</a></li>
+                <li><a href="https://www.che168.com/china/list/#pvareaid=100945">买车</a></li><li class="active"><a href="#">卖车</a></li>
+                <li><a href="https://www.che168.com/ExchangeCar/ExchangeCarIndex.html?cid=0&leadssources=25&sourcetwo=1&sourcethree=297&pvareaid=107933">换车</a></li><li><a href="#">分期</a></li>
+                <li><a href="#">抢先开</a></li><li><a href="#">估值</a></li>
+                <li><a href="#">工具</a></li><li><a href="#">咨询</a></li><li><a href="#">论坛</a></li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                        个人登录
+                        <b class="caret"></b>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a href="#">发布车源</a></li>
+                        <li><a href="#">我卖的车</a></li>
+                        <li><a href="#">我的收藏</a></li>
+                        <!--<li class="divider"></li>
+                        <li><a href="#">分离的链接</a></li>
+                        <li class="divider"></li>
+                        <li><a href="#">另一个分离的链接</a></li>-->
+                    </ul>
+                </li>
+
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                        商家注册
+                        <b class="caret"></b>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a href="#">商家登录</a></li>
+                        <li><a href="#">下载车智赢</a></li>
+                    </ul>
+                </li>
+            </ul>
+</nav>
+
+    <div style="width:1900px;height:800px;background-color:white;float:left">
+        <img src="http://abc.2008php.com/2013_Website_appreciate/2013-06-18/20130618014359.jpg" width="1300" height="800">
+        <!--新增框开始-->
+
+        <div style="width:600px;height:800px;background-color:white;float:right">
+
+            <div class="panel panel-info">
+                <div class="panel-heading">
+                    <h3 class="panel-title">多渠道卖车,售出速度更快</h3>
+                </div>
+            </div>
+        <div class="container-fluid" >
+            <form id="carForm"  class="form-horizontal">
+                <!--<div class="form-group">
+                    <label for="brand" class="col-sm-2 control-label">车系与车型</label>
+                    <div class="col-sm-10">
+                        <select  id="brand" name="brand" class="form-control">
+                            <option>请选择品牌</option>
+                            <option>奥迪</option>
+                            <option>宝马</option>
+                            <option>大众</option>
+                        </select>
+                    </div>
+                </div>-->
+                <div class="form-group">
+                    <label for="location" class="col-sm-2 control-label">地区</label>
+                    <div class="col-sm-4">
+                        <select  id="location" name="location" class="form-control">
+                            <option>请选择</option>
+                            <option value="1">北京</option>
+                            <option value="2">上海</option>
+                            <option value="3">石家庄</option>
+                            <option value="4">黑龙江</option>
+                            <option value="5">深圳</option>
+                            <option value="6">广州</option>
+                        </select>
+                    </div>
+                    <label for="btime" class="col-sm-2 control-label">首次上牌</label>
+                    <div class="col-sm-4">
+                        <input type="text" id="btime" placeholder="首次上牌" name="btime" class="form-control date">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="mileage" class="col-sm-2 control-label">行程</label>
+                    <div class="col-sm-4">
+                        <input type="text" placeholder="行驶里程" id="mileage" name="mileage" class="form-control">
+                    </div>
+                    <label for="price" class="col-sm-2 control-label">期望售价</label>
+                    <div class="col-sm-4">
+                        <input type="text" id="price" placeholder="期望售价" name="price" class="form-control">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="headImg" class="col-sm-2 control-label" onblur="test()">图片</label>
+                    <div class="col-sm-4">
+                        <input type="text" id="testimg" name="image" />
+                        <input type="file" class="projectfile" name="imgg" id="headImg">
+                    </div>
+                </div>
+                <div class="container">
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    <button type="button" style="width: 250px; height: 50px;" class="btn btn-info btn-lg" onclick="openAdd()">立即提交</button>
+                </div>
+            </form>
+        </div>
+    </div><!--右边新增框-->
+    </div>
+        <!--脚本-->
+        <script>
+            <!--提交新增-->
+            //新增
+            function openAdd(){
+                var from=$("#carForm").serialize()
+                $.ajax({
+                    url:'../car/addCar',
+                    //type:'post',
+                    //dataType:'json',
+                    data:from,
+                    success:function(data){
+                        if(data){
+                            location.href="../page/toMai"
+                        }else{
+                            alert("新增失败");
+                        }
+                    }
+                });
+            }
+            <!--初始化图片上传-->
+            $(function () {
+                uploadImg();
+            })
+            function uploadImg(image){
+                $('#headImg').fileinput({
+                    language: 'zh', //设置语言
+                    uploadUrl: '/img/updaloadImg', //上传的地址
+                    allowedFileExtensions: ['jpg', 'gif', 'png'],//接收的文件后缀
+                    showUpload: true, //是否显示上传按钮
+                    showCaption: false,//是否显示标题
+                    browseClass: "btn btn-primary", //按钮样式
+                    dropZoneEnabled: false,//是否显示拖拽区域
+                    //minImageWidth: 50, //图片的最小宽度
+                    //minImageHeight: 50,//图片的最小高度
+                    //maxImageWidth: 1000,//图片的最大宽度
+                    //maxImageHeight: 1000,//图片的最大高度
+                    //maxFileSize: 0,//单位为kb，如果为0表示不限制文件大小
+                    //minFileCount: 0,
+                    maxFileCount: 2, //表示允许同时上传的最大文件个数
+                    enctype: 'multipart/form-data',
+                    validateInitialCount:true,
+                    previewFileIcon: "<i class='glyphicon glyphicon-king'></i>",
+                    msgFilesTooMany: "选择上传的文件数量({n}) 超过允许的最大数值{m}！",
+                }).on('fileuploaded', function(event, data, previewId, index) {
+                    var imgval = $('#testimg').val();
+                    if(imgval == null || imgval == "" || imgval == undefined){
+                        imgval = data.response.responseText;
+                    }/*else{
+			imgval += ","+"http://<%= request.getServerName()%>:<%=request.getServerPort()%><%=request.getContextPath()%>/"+data.response;
+		}*/
+                    $('#testimg').val(imgval);
+                });
+            }
+        <!--时间-->
+        $('.date').datetimepicker({
+        language:'zh-CN',//显示中文
+        format:'yyyy-mm-dd',//显示格式<!--  hh:ii:ss-->
+        minView:'month',//显示到月份
+        initialDate:new Date(),//从初始化当前日期
+        autoclose:true,//选中自动关闭
+        todayBtn:true//显示今日按钮
+        });
+        </script>
+</body>
+</html>

@@ -1,16 +1,15 @@
 server:
-  port: 8080 #eurekayÒ²ÊÇÒ»¸öwebÏîÄ¿£¬ĞèÒªÔÚServletÈİÆ÷ÖĞÔËĞĞ£¬¹ÊÒ²ĞèÒªÕ¼ÓÃÒ»¸ö¶Ë¿ÚºÅ
+  port: 8080 #eurekayä¹Ÿæ˜¯ä¸€ä¸ªwebé¡¹ç›®ï¼Œéœ€è¦åœ¨Servletå®¹å™¨ä¸­è¿è¡Œï¼Œæ•…ä¹Ÿéœ€è¦å ç”¨ä¸€ä¸ªç«¯å£å·
 eureka:
   instance:
-    hostname: localhost #eurekaÊµÀıip
+    hostname: localhost #eurekaå®ä¾‹ip
   client:
-    register-with-eureka: false #·ÀÖ¹×Ô¼º×¢²á×Ô¼º
-    fetch-registry: false #×¢²áÖĞĞÄµÄÖ°Ôğ¾ÍÊÇÎ¬»¤·şÎñÊµÀı£¬Ëü²¢²»ĞèÒªÈ¥¼ìË÷·şÎñ£¬ËùÒÔÉèÖÃ³Éfalse
+    register-with-eureka: false #é˜²æ­¢è‡ªå·±æ³¨å†Œè‡ªå·±
+    fetch-registry: false #æ³¨å†Œä¸­å¿ƒçš„èŒè´£å°±æ˜¯ç»´æŠ¤æœåŠ¡å®ä¾‹ï¼Œå®ƒå¹¶ä¸éœ€è¦å»æ£€ç´¢æœåŠ¡ï¼Œæ‰€ä»¥è®¾ç½®æˆfalse
     service-url:
-      defaultZone: http://${eureka.instance.hostname}:${server.port}/eureka #Ä¬ÈÏ×¢²áÖĞĞÄµØÖ·
+      defaultZone: http://${eureka.instance.hostname}:${server.port}/eureka #é»˜è®¤æ³¨å†Œä¸­å¿ƒåœ°å€
   server:
-    enable-self-preservation: false #²âÊÔÊ±¹Ø±Õ×ÔÎÒ±£»¤»úÖÆ£¬±£Ö¤²»¿ÉÓÃ·şÎñ¼°Ê±Ìß³ö
+    enable-self-preservation: false #æµ‹è¯•æ—¶å…³é—­è‡ªæˆ‘ä¿æŠ¤æœºåˆ¶ï¼Œä¿è¯ä¸å¯ç”¨æœåŠ¡åŠæ—¶è¸¢å‡º
 spring:
   application:
-    name: car-eureka  #Ó¦ÓÃÃû³Æ£¬Ò»°ãÎªÏîÄ¿Ãû
-
+    name: car-eureka  #åº”ç”¨åç§°ï¼Œä¸€èˆ¬ä¸ºé¡¹ç›®å

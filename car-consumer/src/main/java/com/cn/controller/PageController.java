@@ -6,12 +6,21 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @Controller
 @RequestMapping("page")
 public class PageController {
-
-    @RequestMapping("toceshi")
-    public String  toceshi(){
-        return "ceshi11";
+    //主页面(个人中心页面)
+    @RequestMapping("toMain")
+    public String  toMain(){
+        return "main";
     }
 
+    //卖车页面
+    @RequestMapping("toMaiche")
+    public String toMaiche(){
+        return "SoleCar";
+    }
 
-
+    //卖车成功页面
+    @RequestMapping("toMai")
+    public String toMai(){
+        return "success";
+    }
 }
