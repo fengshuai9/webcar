@@ -9,6 +9,7 @@ public class PageController {
 
     @RequestMapping("toceshi")
     public String  toceshi(){
+        System.out.println("543");
         return "ceshi";
     }
 
