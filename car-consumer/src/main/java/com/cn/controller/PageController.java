@@ -11,6 +11,30 @@ public class PageController {
     public String  toMain(){
         return "main";
     }
+    //登陆
+    @RequestMapping("tologin")
+    public String  tologin(){
+        return "login";
+    }
+    //注册
+    @RequestMapping("toreg")
+    public String  toreg(){
+        return "reg";
+    }
+    //快捷登录
+    @RequestMapping("tokjdl")
+    public String  tokjdl(){
+        return "kjdl";
+    }
+    //展示页面
+    @RequestMapping("toshow")
+    public String  toshow(){
+        return "show";
+    }
+    @RequestMapping("tokjdl2")
+    public String  tokjdl2(){
+        return "kjdl2";
+    }
 
     //卖车页面
     @RequestMapping("toMaiche")

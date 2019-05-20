@@ -23,8 +23,9 @@ public class CarConsumerApplication {
 
     @Bean
     @LoadBalanced
-    //开启负载均衡
-    RestTemplate restTemplate() {
+ RestTemplate restTemplate() {
+
+
         return new RestTemplate();
     }
 }
