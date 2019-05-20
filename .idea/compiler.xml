@@ -6,10 +6,12 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
+        <module name="car-apis" />
         <module name="car-consumer" />
         <module name="car-eureka" />
         <module name="car-provider" />
         <module name="carapis" />
+        <module name="used-car" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
@@ -22,6 +24,7 @@
       <module name="car-consumer" options="-parameters" />
       <module name="car-eureka" options="-parameters" />
       <module name="car-provider" options="-parameters" />
+      <module name="used-car" options="-parameters" />
     </option>
   </component>
 </project>

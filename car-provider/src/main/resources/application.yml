@@ -1,26 +1,43 @@
+
+
 server:
   port: 8083
 
-eureka:
-  client:
-    service-url:
-      defaultZone: http://localhost:8080/eureka #Ä¬ÈÏ×¢²áÖĞĞÄµØÖ·
-  instance:
-    lease-renewal-interval-in-seconds: 1     #±íÊ¾eureka client·¢ËÍĞÄÌø¸øserver¶ËµÄÆµÂÊ¡£Èç¹ûÔÚleaseExpirationDurationInSecondsºó£¬
-    #server¶ËÃ»ÓĞÊÕµ½clientµÄĞÄÌø£¬Ôò½«Õª³ı¸Ãinstance
-    lease-expiration-duration-in-seconds: 2 #±íÊ¾eureka serverÖÁÉÏÒ»´ÎÊÕµ½clientµÄĞÄÌøÖ®ºó£¬µÈ´ıÏÂÒ»´ÎĞÄÌøµÄ³¬Ê±Ê±¼ä£¬
-    #ÔÚÕâ¸öÊ±¼äÄÚÈôÃ»ÊÕµ½ÏÂÒ»´ÎĞÄÌø£¬Ôò½«ÒÆ³ı¸Ãinstance
-
 spring:
+
   application:
-    name: car-provider #Ó¦ÓÃÃû³Æ  ±£Ö¤Î¨Ò»   Ò»°ã²ÉÓÃÏîÄ¿Ãû
+    name:  car-provider
+
   datasource:
-    type: com.alibaba.druid.pool.DruidDataSource
-    url: jdbc:mysql://192.168.1.122/erzu?useUnicode=true&characterEncoding=utf-8&serverTimezone=GMT%2b8
     driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://192.168.1.113/erzu?useUnicode=true&characterEncoding=UTF-8
     username: root
     password: root
+
+  redis:
+    host: 127.0.0.1
+    port: 6379
+
+
 
 mybatis:
   type-aliases-package: com.cn.model
 
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8080/eureka #é»˜è®¤æ³¨å†Œä¸­å¿ƒåœ°å€
+  instance:
+    lease-renewal-interval-in-seconds: 1     #è¡¨ç¤ºeureka clientå‘é€å¿ƒè·³ç»™serverç«¯çš„é¢‘ç‡ã€‚å¦‚æœåœ¨leaseExpirationDurationInSecondsåï¼Œ
+    #serverç«¯æ²¡æœ‰æ”¶åˆ°clientçš„å¿ƒè·³ï¼Œåˆ™å°†æ‘˜é™¤è¯¥instance
+    lease-expiration-duration-in-seconds: 2 #è¡¨ç¤ºeureka serverè‡³ä¸Šä¸€æ¬¡æ”¶åˆ°clientçš„å¿ƒè·³ä¹‹åï¼Œç­‰å¾…ä¸‹ä¸€æ¬¡å¿ƒè·³çš„è¶…æ—¶æ—¶é—´ï¼Œ
+    #åœ¨è¿™ä¸ªæ—¶é—´å†…è‹¥æ²¡æ”¶åˆ°ä¸‹ä¸€æ¬¡å¿ƒè·³ï¼Œåˆ™å°†ç§»é™¤è¯¥instance
+
+jedis:
+  pool:
+    host: 127.0.0.1
+    port: 6379
+    config:
+      maxTotal: 100
+      maxIdle: 10
+      maxWaitMillis: 100000

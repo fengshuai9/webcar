@@ -9,14 +9,14 @@ spring:
     name: car-consumer
 
   main:
-    allow-bean-definition-overriding: true #ÔÊĞíÏàÍ¬keyÇé¿öÏÂbeanDefinitionÊµÀıµÄ¸²¸Ç
+    allow-bean-definition-overriding: true #ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¬keyï¿½ï¿½ï¿½ï¿½ï¿½beanDefinitionÊµï¿½ï¿½ï¿½Ä¸ï¿½ï¿½ï¿½
   thymeleaf:
     cache: false
     enabled: true
 
 feign:
   hystrix:
-    enabled: true
+    enabled: false #ç¦ç”¨ ç†”æ–­å™¨
   httpclient:
     connection-timeout: 30000
 
