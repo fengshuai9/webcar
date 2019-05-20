@@ -19,7 +19,7 @@ public class CorsMapping implements WebMvcConfigurer {
                 .allowedOrigins("*")
                 //是否开启cookie跨/////域
                 .allowCredentials(false)
-                //规定能够跨域访问的方法类型
+                //规定能够跨域访问的方法/类型
                 .allowedMethods("GET","POST","DELETE","PUT","OPTIONS","HEAD")
                 //添加验证头信息  token
                 //.allowedHeaders()
