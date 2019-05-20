@@ -1,0 +1,14 @@
+﻿$("a[name='track'],div[name='track'],span[name='track'],li[name='track']").each(function (i, obj) {
+    $(obj).click(function () {
+        trackClick($(obj).attr("eventkey"), $(obj).attr("infoid"));
+    });
+});
+// 记录点击
+function trackClick(eventKey, info) {
+  
+    $.ajax({
+        type: "GET",
+        url: "//collectionpv.che168.com/collect/page_event.ashx?eventkey=" + eventKey + '&info=' + info + '&ref=' + document.referrer + '&cur=' + location.href + '&rm=' + new Date().getTime(),
+        dataType: "jsonp"
+    });
+}

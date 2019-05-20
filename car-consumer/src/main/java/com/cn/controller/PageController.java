@@ -6,10 +6,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @Controller
 @RequestMapping("page")
 public class PageController {
-
-    @RequestMapping("toceshi")
-    public String  toceshi(){
-        return "ceshi";
+    //主页面(个人中心页面)
+    @RequestMapping("toMain")
+    public String  toMain(){
+        return "main";
     }
     //登陆
     @RequestMapping("tologin")
@@ -36,6 +36,15 @@ public class PageController {
         return "kjdl2";
     }
 
+    //卖车页面
+    @RequestMapping("toMaiche")
+    public String toMaiche(){
+        return "SoleCar";
+    }
 
-
+    //卖车成功页面
+    @RequestMapping("toMai")
+    public String toMai(){
+        return "success";
+    }
 }

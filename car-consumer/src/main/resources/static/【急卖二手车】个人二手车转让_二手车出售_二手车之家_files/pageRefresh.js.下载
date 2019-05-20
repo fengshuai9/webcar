@@ -1,0 +1,171 @@
+﻿function pageRefresh() {
+    var self = this;
+    self.cfg = $.extend({
+        //图片上传控件
+        upload: $('#flashObject1'),
+        //车型
+        specInfo: $('#div_car'),
+        specName: $('#txt_search'),
+        //城市
+        cityInfo: $('#span_city'),
+        //上牌时间
+        rDate: $('#span_registerDate'),
+        //公里数
+        mileage: $('#txt_mileage'),
+        //期望售价
+        salePrice: $('#txt_price'),
+        phone: $('#txt_mobile'),
+        //cookie模板
+        pageCookieTpl: { phone: '', bid: 0, sid: 0, spid: 0, specname: '', pid: 0, cid: 0, cname: '', year: 0, month: 0, rDate: '', mileage: 0, saleprice: 0 },
+        cookieName: 'pageCookie',
+    });
+    self.init();
+};
+//绑定事件
+pageRefresh.prototype.event = function () {
+    var self = this;
+    self.cfg.upload.on('mouseenter', function () {
+        var regPhone = new RegExp("^1[3,4,5,6,7,8,9]{1}[0-9]{9}$", "ig");
+        if (regPhone.test(self.cfg.phone.val())) {
+            var pageCookie = self.getCookie(self.cfg.cookieName, JSON.stringify(self.cfg.pageCookieTpl));
+            pageCookie = JSON.parse(pageCookie);
+            //if (self.cfg.phone.val() != pageCookie.phone && pageCookie.phone.length) {
+            //    self.removeCookie();
+            //    pageCookie = self.getCookie(self.cfg.cookieName, JSON.stringify(self.cfg.pageCookieTpl));
+            //    pageCookie = JSON.parse(pageCookie);
+            //}
+            pageCookie.phone = self.cfg.phone.val();
+            var bid = self.cfg.specInfo.attr('bid');
+            if (bid) {
+                var sid = self.cfg.specInfo.attr('sid');
+                var spid = self.cfg.specInfo.attr('spid');
+                var specname = self.cfg.specName.val();
+                pageCookie.bid = bid;
+                pageCookie.sid = sid;
+                pageCookie.spid = spid;
+                pageCookie.specname = specname;
+            }
+            var pid = self.cfg.cityInfo.attr('pid');
+            if (pid) {
+                pageCookie.pid = pid;
+                var cid = self.cfg.cityInfo.attr('cid');
+                pageCookie.cid = cid;
+                var cname = self.cfg.cityInfo.text();
+                pageCookie.cname = cname;
+            }
+            var year = self.cfg.rDate.attr('year');
+            if (year) {
+                var month = self.cfg.rDate.attr('month');
+                var rDate = self.cfg.rDate.text();
+                pageCookie.year = year;
+                pageCookie.month = month;
+                pageCookie.rDate = rDate;
+            }
+            var mileage = self.cfg.mileage.val();
+            if (mileage.length && !isNaN(mileage)) {
+                pageCookie.mileage = mileage;
+            }
+            var saleprice = self.cfg.salePrice.val();
+            if (saleprice.length && !isNaN(saleprice)) {
+                pageCookie.saleprice = saleprice;
+            }
+            self.setCookie(self.cfg.cookieName, JSON.stringify(pageCookie), { domain: '.che168.com', expireHours: 24 });
+        }
+    });
+};
+//操作cookie
+pageRefresh.prototype.setCookie = function (name, value, option) {
+    var str = name + '=' + escape(value);
+    var d = new Date();
+    var time = 24 * 60 * 60 * 30;  // 默认30天
+    var path = '/';                // 默认路径
+    var domainName = '.che168.com';    // 默认域
+    option = option || {};
+    if (option) {
+        if (option.expireHours) {
+            time = option.expireHours * 3600 * 1e3;
+        }
+        d.setTime(d.getTime() + time);
+        str += '; expires=' + d.toGMTString();
+
+        if (option.path) {
+            path = option.path;
+        }
+        str += '; path=' + path;
+
+        if (option.domain) {
+            domainName = option.domain;
+        }
+        str += '; domain=' + domainName;
+
+        if (option.secure) {
+            str += '; true';
+        }
+    }
+    document.cookie = str;
+};
+pageRefresh.prototype.getCookie = function (name, defaultValue) {
+    var coObj = document.cookie;
+    var coLen = coObj.length;
+    var start = 0;
+    var end = 0;
+    if (coLen > 0) {
+        start = coObj.indexOf(name + '=');
+        if (start !== -1) {
+            start = start + name.length + 1;
+            end = coObj.indexOf(';', start);
+            if (end === -1) {
+                end = coLen;
+            }
+            return unescape(coObj.substring(start, end));
+        }
+    }
+    return defaultValue;
+};
+//卖车成功之后清除cookie（保留城市和手机号）
+pageRefresh.prototype.removeCookie = function () {
+    var self = this;
+    var pageCookie = self.getCookie(self.cfg.cookieName, JSON.stringify(self.cfg.pageCookieTpl));
+    pageCookie = JSON.parse(pageCookie);
+    pageCookie.bid = 0;
+    pageCookie.sid = 0;
+    pageCookie.spid = 0;
+    pageCookie.specname = '';
+    pageCookie.year = 0;
+    pageCookie.month = 0;
+    pageCookie.rDate = '';
+    pageCookie.mileage = 0;
+    pageCookie.saleprice = 0;
+    self.setCookie(self.cfg.cookieName, JSON.stringify(pageCookie), { domain: '.che168.com', expireHours: 24 });
+};
+//初始化
+pageRefresh.prototype.init = function () {
+    var self = this;
+    self.event();
+    var pageCookie = self.getCookie(self.cfg.cookieName, JSON.stringify(self.cfg.pageCookieTpl));
+    pageCookie = JSON.parse(pageCookie);
+    if (pageCookie.phone)
+        self.cfg.phone.val(pageCookie.phone);
+    if (pageCookie.bid) {
+        self.cfg.specInfo.attr('bid', pageCookie.bid);
+        self.cfg.specInfo.attr('sid', pageCookie.sid);
+        self.cfg.specInfo.attr('spid', pageCookie.spid);
+        self.cfg.specName.val(pageCookie.specname);
+    }
+    if (pageCookie.rDate) {
+        self.cfg.rDate.attr('year', pageCookie.year);
+        self.cfg.rDate.attr('month', pageCookie.month);
+        self.cfg.rDate.html(pageCookie.rDate);
+    }
+    if (pageCookie.mileage)
+        self.cfg.mileage.val(pageCookie.mileage);
+    if (pageCookie.pid) {
+        self.cfg.cityInfo.attr('pid', pageCookie.pid);
+        self.cfg.cityInfo.attr('cid', pageCookie.cid);
+        self.cfg.cityInfo.html(pageCookie.cname);
+    }
+    if (pageCookie.saleprice)
+        self.cfg.salePrice.val(pageCookie.saleprice);
+};
+//实例化
+var page = new pageRefresh();

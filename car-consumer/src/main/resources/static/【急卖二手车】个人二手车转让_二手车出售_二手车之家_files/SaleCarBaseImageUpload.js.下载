@@ -1,0 +1,898 @@
+﻿/// <reference path="../jquery-1.4.2.js" />
+/// <reference path="PCCommon.js" />
+
+document.domain = 'che168.com';
+
+var PCUploadImage = function () {
+
+    var ithis = this,
+        GUID = $('#GUID').val(),
+        maxUpPicCount = 1,  /* 最上传图片数量 */
+        uploadPicRecordUrl = '/handler/SaleCar/GetUploadedPic.ashx';  /* 记录上传图片url */
+
+    if (GUID == '' || GUID == undefined) {
+        GUID = 0;
+    };
+
+    /*类实例化*/
+    this.init = function () {
+        /*点击上传图片提示*/
+        $('#nullInfoIdUpload').bind('click', function () {
+            if (ithis.isUploading) {
+                alert('上传中，请稍后！');
+            }
+            else if (!ithis.isUploading && parseInt($('#in_infoid').val()) <= 0) {
+                var seriesId = $('#sh_sltCar').attr('sid');
+                var carprice = parseFloat($('#txt_price').val());
+                if (seriesId == 0 && $('#carName').val().length == 0) {
+                    window.location.hash = 'm001';
+                    alert('请先完成车辆信息');
+                } else if (isNaN(carprice) || carprice <= 0) {
+                    window.location.hash = 'm002';
+                    alert('请先完成价格');
+                }
+                else {
+                    saleCarOther.GetInfoId();
+                }
+            } else if ($('#CarImgsUl>li').filter('li[id!=uploadModel2]').length == 1) {
+                alert('最多只能上传1张图');
+            }
+            else {
+                ithis.initFlashPlugin(1);
+            }
+        });
+        /**取消图片上传*/
+        $('#clearUploadImage').bind('click', function () {
+            Pop.Dialog('pop_2');
+        });
+        /*点击取消图片上传的确定和取消*/
+        $('#pop_2').find('.pcan_no').bind('click', function () { Pop.Dialog.Hide('pop_2'); });
+        $('#pop_2').find('.pcan_yes').bind('click', function () {
+            var imageItemLis = $('#CarImgsUl').find('li[group*="' + currentGroup + '"]').remove();
+            ithis.initFlashPlugin(1);
+            $('#CarImgsUl').find('dd').show();
+
+            $('#uploadProgress').hide();
+            $('#uploadProgress').find('span>em').text(0);
+            $('#uploadProgress').find('span>span').css('width', '0%');
+            Pop.Dialog.Hide('pop_2');
+            ithis.isUploading = false;
+            $('#uploadProgress').find('span>em').text('0');
+            $('#uploadProgress').find('span>span').css('width', '0%');
+            if ($('#CarImgsUl>li').filter('li[id!=uploadModel2]').length == 0) {
+                ithis.showPrompt(true);
+            }
+            operationFlash();
+        });
+
+        $('#phoneUpload').bind('click', function () {
+            $('#uploadModel2_flash').hide();
+            $('#uploadModel2_Code').show();
+            $('#uploadModel2_flash').attr('class', 'up-div up-left');
+            $('#uploadModel2_Code').attr('class', 'up-div');
+            this.className = 'cur';
+            $('#pcUpload').attr('class', '');
+            return false;
+        });
+        $('#pcUpload').bind('click', function () {
+            $('#uploadModel2_flash').show();
+            $('#uploadModel2_Code').hide();
+            $('#uploadModel2_flash').attr('class', 'up-div');
+            $('#uploadModel2_Code').attr('class', 'up-div up-left');
+            this.className = 'cur';
+            $('#phoneUpload').attr('class', '');
+            return false;
+        });
+        ithis.showPrompt(true, false);
+        ithis.initFlashPlugin(1);
+    };
+
+    /*获取封面图片的名称*/
+    this.GetCoverImageName = function () {
+        var coverImage = $('#CarImgsUl').find('.click_cover');
+        var coversrc = '';
+        if (coverImage.length < 1) {
+            coverImage = $('#CarImgsUl').find('.click_bor');
+        }
+        if (coverImage.length == 1) {
+            coversrc = coverImage.find('img').attr('src');
+            coversrc = ithis.GetCarImageBaseSrc(coversrc);
+        }
+        return coversrc;
+    };
+
+    /* 新设置首图方法 */
+    this.setCoverReqestNew = function (indexImage) {
+        var cImageLi = $('#imageLi' + indexImage),
+        cImgSrc = cImageLi.find('dl>dt>img').attr('src');
+        newImgSrc = '';
+        if (cImgSrc !== '' && cImgSrc.length > 15) {
+            newImgSrc = ithis.setFirstImgPre('f_', cImgSrc);
+            ithis.isUploading = true;
+            ithis.setCarImageCover(cImageLi, newImgSrc);
+            cImageLi.find('div.sha_wait').remove();
+            ithis.isUploading = false;
+            $('.icon-first').attr('class', 'icon-first up-left');
+            cImageLi.find('.icon-first').removeClass('up-left');
+        } else {
+            alert('请不在要上传失败的图上设置首图');
+            return;
+        }
+    };
+
+    /* 给图片增加前缀 */
+    this.setFirstImgPre = function (preStr, imgSrc) {
+        if (imgSrc.indexOf(preStr) > -1) {
+            return imgSrc;
+        }
+        if (preStr.length > 0 && imgSrc.length > 0) {
+            var a = imgSrc.lastIndexOf('/');
+            /* 给新首图加上 f_参数 */
+            return newImgSrc = imgSrc.substr(0, a + 1) + preStr + imgSrc.substr(a + 1, imgSrc.length);
+        } else {
+            return '';
+        }
+    };
+
+    /* 设置首图时更新数据 */
+    var isUpdateIndex = false; /* 是否在更新首图 */
+    this.updateIndexImg = function (oldImg, newImg) {
+        isUpdateIndex = true;
+        $.ajax({
+            type: 'GET',
+            dataType: 'json',
+            url: uploadPicRecordUrl,
+            data: { 'ot': 'setindex', 'key': GUID, 'oldImg': oldImg.replace('http:', '').replace('https:', '').replace(/\/\/2sc0.autoimg.cn|\/\/2sc2.autoimg.cn/gi, "").replace('/s_', '/'), 'picname': newImg.replace('http:', '').replace('https:', '').replace(/\/\/2sc0.autoimg.cn|\/\/2sc2.autoimg.cn/gi, "").replace('/s_', '/') },
+            success: function (data) {
+                if (data !== undefined && data.code === 0) {
+                    isUpdateIndex = false;
+                    tempImgList = tempImgList.join(',').replace(oldImg, newImg).split(',');
+                } else {
+                    isUpdateIndex = false;
+                }
+            }
+        });
+        /* 如果要替换的首图是PC上传的话则执行下面语句（实际上是无论如何都会执行下面） */
+        tempImgList = tempImgList.join(',').replace(oldImg, newImg).split(',');
+    };
+
+    /*设置图片为封面*/
+    this.setCarImageCover = function (currentA, imgsrc) {
+        var clearCover = $('#CarImgsUl').find('.click_bor');
+        if (clearCover.length > 0) {
+            clearCover.attr('class', 'click_cover');
+            clearCover.hover(
+            function () { $(this).find('.cover').show(); },
+            function () { $(this).find('.cover').hide(); }
+            );
+            clearCover.find('.cover').hide();
+        }
+
+        currentA.find('dl>dt>img').attr('src', imgsrc);
+        currentA.find('dl>dt').unbind('mouseenter mouseleave');
+        currentA.find('dl>dt').attr('class', 'click_bor');
+        currentA.find('.cover').hide();
+
+        $('#ErrorImage').hide();
+    };
+
+    /*全路径截取*/
+    //var srcBefore = '';
+    this.GetCarImageBaseSrc = function (imagesrc) {
+        //srcBefore = '';
+        if (imagesrc.indexOf('loading.gif') > -1 || imagesrc.indexOf('uploadFail.jpg') > -1) return '';
+        var tmpArr = null;
+        if (imagesrc.indexOf('/usedcar/2scimg') > -1) {
+            tmpArr = imagesrc.split('/usedcar');
+            imagesrc = '/usedcar' + tmpArr[1];
+        } else if (imagesrc.indexOf('/escimg/') > -1) {
+            tmpArr = imagesrc.split('/escimg');
+            imagesrc = '/escimg' + tmpArr[1];
+        } else {
+            tmpArr = imagesrc.split('/2scimg');
+            imagesrc = tmpArr[1];
+        }
+        return imagesrc.replace(/\/f_s_|\/s_/gi, '/'); /* 去掉首图前缀f_s_、s_ */
+    }
+
+    /* 删除图片 */
+    this.delImageLi = function (imageIndex) {
+        ithis.isUploading = true;
+        var curObj = $('#imageLi' + imageIndex),
+            picName = curObj.find('img').attr('src'),
+            CarImgsUl = $('#CarImgsUl'),
+            imgCount = 0;  /* 删除一张后的图片总数 */
+        /* 删除图片 */
+        if (GUID > 0 && picName.indexOf('uploadPic120X90.jpg') === -1 && picName.indexOf('uploadFail.jpg') === -1) {
+            if (picName.indexOf('/usedcar/2scimg/') > -1) {
+                picName = '/usedcar' + picName.split('/usedcar')[1].replace(/\/f_s_|\/s_/gi, '/');
+            } else if (picName.indexOf('/escimg/') > -1) {
+                picName = '/escimg' + picName.split('/escimg')[1].replace(/\/f_s_|\/s_/gi, '/');
+            } else {
+                picName = picName.split('2scimg')[1].replace(/(s_|f_)/gi, '');
+            }
+
+            $.ajax({
+                type: 'GET',
+                dataType: 'json',
+                url: uploadPicRecordUrl,
+                data: { 'key': GUID, 'ot': 'del', 'picname': picName },
+                success: function (data) {
+                    if (data !== undefined && data.code === 0) {
+                        curObj.remove();
+                        imgCount = CarImgsUl.find('li').length - 1;
+                        /* 删除上一次请求的临时数组中的当前图片 */
+                        for (var i = 0, j = tempImgList.length; i < j; i++) {
+                            if (tempImgList[i] === picName) {
+                                tempImgList.splice(i, 1);
+                            }
+                        }
+                        ithis.isUploading = false;
+                        $("#uploadModel2").show();
+                        $("#pccode").show();
+                    } else {
+                        alert('删除失败');
+                        ithis.isUploading = false;
+                    }
+                    other();
+                    operationFlash();
+                }
+            });
+
+        } else {
+            ithis.isUploading = false;
+            curObj.remove();
+            imgCount = CarImgsUl.find('li').length - 1;
+            $("#uploadModel2").show();
+            $("#pccode").show();
+            other();
+            operationFlash();
+            $('#ErrorImage').hide();
+        }
+        /* 其它操作 */
+        function other() {
+            /* 如果显示小于1张则开始请求服务器 GUID>0 确认是发车页 修改页面不发请求 */
+            if (typeof (pollInt) !== 'undefined' && imgCount < maxUpPicCount && pollInt === 0 && GUID > 0) {
+                pollInt = setInterval(pc_UploadImage.getImg, 5000);
+            }
+
+            if (imgCount === 0) {
+                //隐藏提示提示框
+                ithis.showPrompt(true);
+                $('#ErrorImage').hide();
+            }
+            ithis.initFlashPlugin(1);
+        }
+    };
+
+    /*删除微信二维码图片*/
+    this.delWechatImg = function () {
+        var GUID2 = $('#GUID2').val();
+        var picName = $('#div_WeChatCode').find('img').eq(0).attr('src');
+        if (GUID2 > 0 && picName.indexOf('uploadPic120X90.jpg') === -1 && picName.indexOf('uploadFail.jpg') === -1) {
+            if (picName.indexOf('/usedcar/2scimg/') > -1) {
+                picName = '/usedcar' + picName.split('/usedcar')[1].replace(/\/f_s_|\/s_/gi, '/');
+            } else if (picName.indexOf('/escimg/') > -1) {
+                picName = '/escimg' + picName.split('/escimg')[1].replace(/\/f_s_|\/s_/gi, '/');
+            } else {
+                picName = picName.split('2scimg')[1].replace(/(s_|f_)/gi, '');
+            }
+            $.ajax({
+                type: 'GET',
+                dataType: 'json',
+                url: uploadPicRecordUrl,
+                data: { 'key': GUID2, 'ot': 'del', 'picname': picName },
+                success: function (data) {
+                    if (data !== undefined && data.code === 0) {
+                        $('#div_WeChatCode').find('img').eq(0).attr('src', '');
+                        $('#div_WeChatCode').hide();
+                    } else {
+                        alert('删除失败');
+                    }
+                }
+            });
+        } else {
+            $('#div_WeChatCode').find('img').eq(0).attr('src', '');
+            $('#div_WeChatCode').hide();
+        }
+    };
+    /*增加上传图片项*/
+    this.AppendImageItem = function (upImageIndex, upCurrentGourp, imageSrc) {
+        if (imageSrc == null) imageSrc = '//www.autoimg.cn/che168_2sc/images/upload/uploadPic120X90.jpg';
+        $('#uploadModel2').before('<li id="imageLi' + upImageIndex + '" group="' + upCurrentGourp + '"><dl><dt class="click_cover" idt="' + upImageIndex + '"><img width="120" height="90" src="' + imageSrc + '"><div style="display:none;" class="cover set-first" onclick="pc_UploadImage.setCoverReqestNew(' + upImageIndex + ');return false;">设为封面</div><i class="icon-first ' + (upImageIndex != '20' ? 'up-left' : '') + '"></i></dt><dd style="display:none;"><a href="javascript:void(0);" onclick="pc_UploadImage.editImageLi(' + upImageIndex + ');return false;">编辑</a></dd><dd style="display:none;"><a href="javascript:void(0);" onclick="pc_UploadImage.delImageLi(' + upImageIndex + ');return false;">删除</a></dd></dl></li>');
+    };
+
+    /*处理flash上传位置*/
+    var operationFlash = function () {
+        if (ithis.isUploading) {
+            $('#uploadModel1').attr('class', 'up-box up-left');
+            $('#uploadModel2').attr('class', 'up-left');
+            $('#prompt_img').css('left', '16px');
+            $('#div_prompt').attr('class', 'up-flash up-flash-h');
+            $('#prompt_img').find('img').attr('src', '//www.autoimg.cn/2scimg/web/personal/201311/pic-flash.png');
+        }
+        else {
+            if ($('#CarImgsUl').children().length - 1 > 0) {
+                $('#uploadModel1').attr('class', 'up-box up-left');
+                $('#prompt_img').css('left', '16px');
+                $('#prompt_img').find('img').attr('src', '//www.autoimg.cn/2scimg/web/personal/201311/pic-flash.png');
+                $('#div_prompt').attr('class', 'up-flash up-flash-h');
+                if ($('#CarImgsUl').children().length < 18) {
+                    $('#uploadModel2').attr('class', '');
+                    $('#li_MSCode').attr('class', '');
+                }
+                else {
+                    $('#uploadModel2').attr('class', 'up-left');
+                    $('#li_MSCode').attr('class', 'up-left');
+                }
+            }
+            else {
+                $('#prompt_img').find('img').attr('src', '//www.autoimg.cn/2scimg/web/uc/201408/pic-flash.png');
+                $('#uploadModel1').attr('class', 'up-box');
+                $('#uploadModel2').attr('class', 'up-left');
+                $('#prompt_img').css('left', '0px');
+                $('#div_prompt').attr('class', 'up-flash');
+            }
+        }
+    };
+
+    /*flash:100 整体图片准备上传,imagesCount:选择图片数量,cUpLiIndex:当前上传的Li的索引*/
+    this.isUploading = false;
+    var cUpLiIndex = 20;
+    var currentGroup = 0;
+    var errorArray = new Array();
+    this.readyfileUp = function (imagesCount) {
+        ithis.isUploading = true;
+        //上传图片之前卸载提交和预览事件
+        $('#CarSubmit').unbind('click');
+        $('#CarBrowse').unbind('click');
+        $('#CarImgsUl').find('dd').hide();
+        currentGroup++;
+        errorArray.length = 0;
+        $('#pccode').hide();
+        for (var i = 0; i < imagesCount; i++) {
+            ithis.AppendImageItem(i + cUpLiIndex, currentGroup);
+        }
+        //隐藏提示效果
+        $('#uploadProgress').show();
+        $('#uploadProgress').find('span>em').text(imagesCount);
+        $('#uploadProgress').find('span>span').css('width', '0%');
+        operationFlash();
+        ithis.showPrompt(true, false);
+    };
+
+    /*flash:200 图片开始上传*/
+    var cimageIndex = 0;
+    this.fileUpStart = function (imageIndex, currentImageName) {
+        cimageIndex = imageIndex;
+        $('#imageLi' + cUpLiIndex).find('img').attr({ 'class': 'loding', 'src': '//www.autoimg.cn/che168_2sc/images/upload/loading.gif', 'width': '32', 'height': '32' });
+    };
+
+    /*flash:300 图片上传进度 pfile:当前上传图片进度, imageIndex:当前上传的图片索引*/
+    this.fileUpProgress = function (imageIndex, pfile) {
+    };
+
+    /*flash:400 图片上传完成  data:服务器返回数据*/
+    var tempGroupUploadImgList = []; /* 记录PC端上传了的图片记录格式：http://2sc0.autoimg.cn/usedcar/2scimg/2015/1/13/s_5027751067608100909.jpg  */
+    this.fileUpFinish = function (data) {
+        var totolImageCount = parseInt($('#uploadProgress').find('span>em').text());
+        $('#uploadProgress').find('span>span').css('width', (cimageIndex + 1) * 100 / totolImageCount + '%');
+        var backData = eval("(" + data + ")");
+        var currentImageObj = $('#imageLi' + cUpLiIndex).find('img');
+        if (backData.success == 1) {
+            var imgUrl = backData.img.replace('http:', '').replace('/m_', '/s_');
+            currentImageObj.replaceWith('<img width="120" height="90" src="' + imgUrl + '"/>');
+            tempGroupUploadImgList.push(imgUrl);
+        }
+        else {
+            currentImageObj.replaceWith('<img width="120" height="90" src="//www.autoimg.cn/che168_2sc/images/upload/uploadFail.jpg"/>');
+            $('#imageLi' + cUpLiIndex).find('.cover').remove();
+            $('#imageLi' + cUpLiIndex).find('dl>dd>a').eq(0).remove();
+        }
+        cUpLiIndex++;
+        $('#CarImgsUl').find('dd').show();
+        $("#uploadModel2").hide();
+        $("#pccode").hide();
+    };
+
+    /*flash:500 所有图片上传完成*/
+    this.allFileUpFinish = function (totalUpCount) {
+        ithis.resetImgCount();
+        $('#CarImgsUl').find('dd').show();
+        $('#CarImgsUl').find('.click_cover').hover(
+            function () { $(this).find('.cover').show(); },
+            function () { $(this).find('.cover').hide(); }
+        );
+        $('#uploadProgress').hide();
+        $('#div_batchUpload').hide();
+
+        if ($('#CarImgsUl').find('.click_bor').length == 0) {
+            var imageSrc = $('#CarImgsUl').find('li>dl>dt>img').eq(0);
+            if (imageSrc.attr('src').indexOf('uploadFail.jpg') > -1 || imageSrc.attr('src').indexOf('loading.gif') > -1) {
+                $('#ErrorImage').text('请删除上传失败图片，并设置封面！');
+                $('#ErrorImage').show();
+            }
+            else {
+                ithis.setCoverReqestNew($('#CarImgsUl').find('li').eq(0).attr('id').replace('imageLi', ''));
+            }
+        }
+        else {
+            $('#ErrorImage').hide();
+        }
+        isModify = 22;
+        $('#imgsCount_span').text($('#CarImgsUl').find('li').length - 2);
+        /* 记录本组上传图片入库 GUID>0表明是发车页面不是修改页 
+        //setTimeout(function () {*/
+        if (GUID > 0) {
+            if (tempGroupUploadImgList.length > 0) {
+                var picName = tempGroupUploadImgList.join(',');
+                /* 过滤域名及//及前缀s_,f_ */
+                picName = picName.replace('http:', '').replace('https:', '').replace(/\/\/2sc0.autoimg.cn|\/\/2sc2.autoimg.cn/gi, '').replace(/\/f_s_|\/s_/gi, '/').replace(/\/\//gi, '/');
+
+                $.ajax({
+                    type: 'GET',
+                    dataType: 'json',
+                    url: uploadPicRecordUrl,
+                    data: { 'ot': 'add', 'key': GUID, 'picname': picName },
+                    success: function (data) {
+                        if (data !== undefined && data.code === 0) {
+                            tempImgList = (tempImgList.join(',') + ',' + tempGroupUploadImgList.join(',')).split(',');
+                            tempGroupUploadImgList = [];
+                        } else {
+                            tempGroupUploadImgList = [];
+                        }
+                    }
+                });
+            }
+        }
+        /*}, 1000);*/
+
+        ithis.isUploading = false;
+        //上传图片完毕，重新绑定提交和预览事件
+        $('#CarSubmit').bind('click', saleCar_Addition.Submit);
+        $('#CarBrowse').bind('click', saleCar_Addition.Browse);
+        operationFlash();
+    };
+
+    /*flash:600 选择图片数量溢出提示,selectCount:flash选择的图片数量*/
+    this.imgOverflow = function (selectCount) {
+        ithis.isUploading = false;
+        if (selectCount>1) {
+            alert('只能选择1张图片');
+        }
+        else {
+           // alert('您还可以选择' + (16 - ($('#CarImgsUl>li').filter('li[id!=uploadModel2]').length)).toString() + '张图片');
+        }
+    };
+
+    /*重新设置flash可上传的图片数量*/
+    this.resetImgCount = function () {
+        var sy_count = 1 - $('#CarImgsUl>li').filter('li[id!=uploadModel2]').length;
+        if (sy_count > 0) {
+            ithis.initFlashPlugin(1);
+        } else {
+            operationFlash();
+        }
+    };
+
+    /*flash:700  其它提示*/
+    this.messageTip = function (msg) {
+        errorArray.push(cUpLiIndex);
+        $('#imageLi' + cUpLiIndex).find('img').replaceWith('<img width="120" height="90" src="//www.autoimg.cn/che168_2sc/images/upload/uploadFail.jpg"/>');
+        $('#imageLi' + cUpLiIndex).find('.cover').remove();
+        $('#imageLi' + cUpLiIndex).find('dl>dd>a').eq(0).remove();
+        $('#CarImgsUl').find('dd').show();
+        $("#uploadModel2").hide();
+        $("#pccode").show();
+        ithis.isUploading = false;
+        cUpLiIndex++;
+        alert(msg);
+    };
+
+    /*加载flash插件*/
+    this.initFlashPlugin = function (imgCount) {
+        var flashObject = 'flashObject2';
+        var whSize = ' width="124" height="102" ';
+        if (imgCount == 1) { flashObject = 'flashObject1'; whSize = ' width="75" height="60" '; }
+        if (imgCount <= 0) { $('#' + flashObject).hide(); return; }
+        var isfreecar = pcCommon.GetQueryString('isfree') == 1 ? 'free_infoid=1000' : 'infoid=1000';
+        var flashObj = '<object ' + whSize + '><param name="movie" value="/flash/ImgCompress_v4.swf" /><param name="quality" value="high"/><param name="allowScriptAccess" value="always" /><param name="flashvars" value="req=//upload.che168.com/UploadImage.ashx&cd=oimg&' + isfreecar + '&imgc=' + imgCount + '"/><param name="wmode" value="transparent"/><embed id="MoreFileUpload" align="center" src="/flash/ImgCompress_v4.swf" ' + whSize + ' type="application/x-shockwave-flash" allowScriptAccess="always" wmode="transparent" quality="high" wmode="transparent" flashvars="req=//upload.che168.com/UploadImage.ashx?' + isfreecar + '&imgc=' + imgCount + '"></embed></object>';
+        $('#' + flashObject).html(' ' + flashObj);
+        $('#' + flashObject).show();
+    };
+
+    /*编辑图片*/
+    var currentEditId = -1;
+    this.editImageLi = function (imageIndex) {
+        var infoid = $("#in_infoid").val(),
+            carImages = $('#CarImgsUl').find('li>dl>dt>img'),
+            newBaseUrl = 'https://2sc2.autoimg.cn',
+            mt_imgList = '',
+            tempsrc = '',
+            currentImageUrl = $('#imageLi' + imageIndex).find('img').attr('src');
+
+        var isPass = true;
+        for (var i = 0, j = carImages.length; i < j ; i++) {
+            if (carImages[i].src.indexOf('upload/uploadFail.jpg') > -1) {
+                $('#ErrorImage').show();
+                $('#ErrorImage').html('请删除上传失败图片，再进行编辑！');
+                isPass = false;
+                break;
+            }
+        }
+        if (!isPass) {
+            return;
+        }
+
+        var tmpArr = null;
+        for (var i = 0, j = carImages.length; i < j; i++) {
+            if (currentImageUrl == carImages[i].src) continue;
+            if (carImages[i].src.indexOf('usedcar/2scimg') > -1) {
+                tempsrc = carImages[i].src.toLowerCase();
+                tmpArr = tempsrc.split('/usedcar');
+                mt_imgList += '/usedcar' + tmpArr[1].replace('s_', '') + ',' + '/usedcar' + tmpArr[1] + '|';
+            } else if (carImages[i].src.indexOf('/escimg/') > -1) {
+                tempsrc = carImages[i].src;  /* 不能 to 成大写或小写 因为 Linux 是区分大小写的 */
+                tmpArr = tempsrc.split('/escimg');
+                mt_imgList += '/escimg' + tmpArr[1].replace(/\/f_s_|\/s_/, '/') + ',' + '/escimg' + tmpArr[1] + '|';
+            } else {
+                tempsrc = carImages[i].src.toLowerCase();
+                tmpArr = tempsrc.split('/2scimg');
+                mt_imgList += '/2scimg' + tmpArr[1].replace('s_', '') + ',' + '/2scimg' + tmpArr[1] + '|';
+                newBaseUrl = tmpArr[0];
+            }
+        }
+        if (mt_imgList.length > 0) {
+            mt_imgList = mt_imgList.substr(0, mt_imgList.length - 1);
+            if (currentImageUrl.indexOf('usedcar/2scimg') > -1) {
+                tempsrc = currentImageUrl.toLowerCase();
+                tmpArr = tempsrc.split('/usedcar');
+                mt_imgList = '/usedcar' + tmpArr[1].replace('s_', '') + ',' + '/usedcar' + tmpArr[1] + '|' + mt_imgList;
+            } else if (currentImageUrl.indexOf('/escimg/') > -1) {
+                tempsrc = currentImageUrl;
+                tmpArr = tempsrc.split('/escimg');
+                mt_imgList = '/escimg' + tmpArr[1].replace(/\/f_s_|\/s_/, '/') + ',' + '/escimg' + tmpArr[1] + '|' + mt_imgList;
+            } else {
+                tempsrc = currentImageUrl.toLowerCase();
+                tmpArr = tempsrc.split('/2scimg');
+                mt_imgList = '/2scimg' + tmpArr[1].replace('s_', '') + ',' + '/2scimg' + tmpArr[1] + '|' + mt_imgList;
+                newBaseUrl = tmpArr[0];
+            }
+        }
+        else {
+            if (currentImageUrl.indexOf('usedcar/2scimg') > -1) {
+                tempsrc = currentImageUrl.toLowerCase();
+                tmpArr = tempsrc.split('/usedcar');
+                mt_imgList = '/usedcar' + tmpArr[1].replace('s_', '') + ',/usedcar' + tmpArr[1];
+            } else if (currentImageUrl.indexOf('/escimg/') > -1) {
+                tempsrc = currentImageUrl;
+                tmpArr = tempsrc.split('/escimg');
+                mt_imgList = '/escimg' + tmpArr[1].replace(/\/f_s_|\/s_/, '/') + ',' + '/escimg' + tmpArr[1] + '|' + mt_imgList;
+            } else {
+                tempsrc = currentImageUrl.toLowerCase();
+                tmpArr = tempsrc.split('/2scimg');
+                tempsrc = currentImageUrl.toLowerCase();
+                mt_imgList = '/2scimg' + tmpArr[1].replace('s_', '') + ',' + '/2scimg' + tmpArr[1] + '|';
+            }
+        }
+
+        if (mt_imgList.charAt(mt_imgList.length - 1) == '|') {
+            mt_imgList = mt_imgList.substring(0, mt_imgList.length - 1);
+        }
+
+        /*加载flash*/
+        var isfreecar = pcCommon.GetQueryString('isfree') == 1 ? 'free_id=1000' : 'id=1000';
+        var uploadSrc = "//upload.che168.com/UploadImage.ashx?" + isfreecar;
+        ithis.meitu_loadFlash(infoid, mt_imgList.replace(/\/f_/gi, '/'), uploadSrc, newBaseUrl);
+        currentEditId = imageIndex;
+        /*显示美图秀秀图层*/
+        setTimeout(function () { Pop.Dialog('pop_1'); }, 400);
+    };
+
+    /*加载Flash*/
+    this.meitu_loadFlash = function (infoid, imglist, uploadSrc, newBaseUrl) {
+        //加载美图参数
+        var flashvars = {
+            newBaseURL: newBaseUrl,
+            //图片名称
+            images: imglist,
+            //图片最大尺寸
+            zoomsize: "1024",
+            //上传地址
+            uploadsrc: uploadSrc,
+            //关闭编辑器回调
+            closePhotoEditorFun: 'pc_UploadImage.closePhotoEditor',
+            //上传完成后回调
+            meitu_UploadImgsCompleteFun: 'pc_UploadImage.UploadImgsComplete'
+        };
+
+        //当存在车源的时候加载美图秀秀
+        if (imglist.length > 0) {
+            var avg = 'images=' + flashvars.images + '&zoomsize=' + flashvars.zoomsize + '&uploadsrc=' + flashvars.uploadsrc + '&closePhotoEditorFun=' + flashvars.closePhotoEditorFun + '&meitu_UploadImgsCompleteFun=' + flashvars.meitu_UploadImgsCompleteFun + '&baseURL=' + flashvars.newBaseURL;
+            var objectstr = '<object width="800" height="600"><param name="base" value="' + flashvars.newBaseURL + '/flash/" /><param name="allowScriptAccess" value="always"><param name="movie" value="' + flashvars.newBaseURL + '/flash/che168.swf" /><param name="flashvars" value="' + avg + '"/><param name="quality" value="high"/><embed id="PhotoEditor" align="center" src="' + flashvars.newBaseURL + '/flash/che168.swf" base="' + flashvars.newBaseURL + '/flash/" allowScriptAccess="always" width="800" height="600"  type="application/x-shockwave-flash" quality="high" flashvars="' + avg + '"></embed></object>';
+            $("#pop_1").html(' ' + objectstr);
+        }
+    };
+
+    /*关闭照片编辑器*/
+    this.closePhotoEditor = function () {
+        Pop.Dialog.Hide('pop_1');
+        currentEditId = -1;
+    };
+
+    /*图片上传响应(data为后端返回数据)*/
+    var isEdit = false;
+    this.UploadImgsComplete = function (ImgNames) {
+        var carImages = $('#CarImgsUl').find('li>dl>dt>img'),
+            imageBaseUrl = 'https://2sc2.autoimg.cn',
+            newImgList = [];/* 编辑后新的图片路径数组: http://www.autoimg.cn/2scimg/2014/6/26/s_4946396343057564620.jpg 必须是s_ */
+
+        $('#imageLi' + currentEditId).find('dl>dt>img').attr('src', imageBaseUrl + ithis.AppandPicPrefix(ImgNames[0], 's_'));
+
+        /* 临时添加测试用 */
+        Pop.Dialog.Hide('pop_1');
+
+        var i = 1;
+        for (; i < carImages.length; i++) {
+            if (carImages.eq(i - 1).attr('src').indexOf('loading.gif') > -1 || carImages.eq(i - 1).attr('src').indexOf('uploadFail.jpg') > -1) continue;
+            var addPrefixSrc = ithis.AppandPicPrefix(ImgNames[i], 's_');
+            if (carImages.eq(i - 1).parent().attr('idt') == currentEditId) {
+                break;
+            }
+            else if (carImages[i - 1].src.indexOf(addPrefixSrc) === -1) {
+                carImages.eq(i - 1).attr('src', imageBaseUrl + addPrefixSrc);
+            }
+        }
+        for (; i < carImages.length; i++) {
+            if (carImages.eq(i - 1).attr('src').indexOf('loading.gif') > -1 || carImages.eq(i - 1).attr('src').indexOf('uploadFail.jpg') > -1) continue;
+            var addPrefixSrc = ithis.AppandPicPrefix(ImgNames[i], 's_');
+            if (carImages[i].src.indexOf(addPrefixSrc) === -1) {
+                carImages.eq(i).attr('src', imageBaseUrl + addPrefixSrc);
+            }
+        }
+
+        var idt = $('#CarImgsUl').find('.click_bor').attr('idt');
+        if (idt !== null && idt >= 0) {
+            ithis.setCoverReqestNew(idt);
+        }
+
+        ithis.closePhotoEditor();
+
+        /* 如果是新发车才做对比 */
+        if (GUID > 0) {
+            for (var x = 0, y = ImgNames.length; x < y ; x++) {
+                newImgList.push(ithis.AppandPicPrefix(imageBaseUrl + ImgNames[x], 's_'));
+            }
+
+            /* 美图秀秀修改完图片后，返回的所有图片地址对比修改之前的数据更新数据库 */
+            var tempImgListStr = tempImgList.join(','),
+                newImgListStr = newImgList.join(','),
+                editImgList = [], /* 修改后的新图片数组[也就是增加的] */
+                beforeEditImgList = [];  /* 被修改的图片数组 */
+
+            /* 如果请求图片地址列表与编辑后的图片地址列表不一样则表示修改过某张图片 */
+            if (tempImgListStr !== newImgListStr) {
+                isEdit = true;
+
+                /* 找出修改的图片 */
+                for (var a = 0, b = newImgList.length; a < b; a++) {
+                    /* 如果有则说明没有被修改过 */
+                    if (tempImgListStr.indexOf(newImgList[a]) > -1) { continue; } else {
+                        /* 修改过的新图片数组填充 */
+                        editImgList.push(newImgList[a]);
+                    }
+                }
+
+                /* 找出修改后被替换的图片(用于删除旧信息) */
+                for (var a = 0, b = tempImgList.length; a < b; a++) {
+                    if (newImgListStr.indexOf(tempImgList[a]) > -1) { continue; } else {
+                        beforeEditImgList.push(tempImgList[a]);
+                    }
+                }
+                var beforeEditImgStr = beforeEditImgList.join(',').replace('http:', '').replace('https:', '').replace(/\/\/2sc0.autoimg.cn|\/\/2sc2.autoimg.cn|\/\/www.autoimg.cn\/2scimg/gi, '').replace(/\/s_/gi, '/'),    //beforeEditImgList.join(',').replace(/(http:\/\/2sc0.autoimg.cn|s_)/gi, '')
+                    editImStr = editImgList.join(',').replace('http:', '').replace('https:', '').replace(/\/\/2sc0.autoimg.cn|\/\/2sc2.autoimg.cn|\/\/www.autoimg.cn\/2scimg/gi, '').replace(/\/s_/gi, '/');          //editImgList.join(',').replace(/(http:\/\/2sc0.autoimg.cn|s_)/gi, '')
+
+                $.ajax({
+                    type: 'GET',
+                    dataType: 'json',
+                    url: uploadPicRecordUrl,
+                    //data: { 'ot': 'edit', 'key': GUID, 'beforeeditimglist': beforeEditImgList.join(',').replace(/(http:\/\/www.autoimg.cn\/2scimg|s_)/gi, ''), 'picName': editImgList.join(',').replace(/(http:\/\/www.autoimg.cn\/2scimg|s_)/gi, '') },
+                    data: { 'ot': 'edit', 'key': GUID, 'beforeeditimglist': beforeEditImgStr, 'picName': editImStr },
+                    success: function (data) {
+                        if (data !== undefined && data.code === 0) {
+                            var tempNew = tempImgList.join(',').toString();
+                            for (var a = 0; a < beforeEditImgList.length; a++) {
+                                tempNew = tempNew.replace(beforeEditImgList[a], editImgList[a]);
+                            }
+                            tempImgList = tempNew.split(',');
+                        }
+                        isEdit = false;
+                    }
+                });
+            }
+        }
+    };
+
+    /*图片名称加前缀*/
+    this.AppandPicPrefix = function (imgSrc, prefix) {
+        var splitIndex = imgSrc.lastIndexOf('/');
+        var srcSplit = imgSrc.substr(0, splitIndex + 1) + prefix + imgSrc.substr(splitIndex + 1, imgSrc.length - splitIndex - 1);
+        return srcSplit;
+    };
+
+    /*模块验证*/
+    this.IsCheckPass = false;
+    this.PostValue = '';
+
+    this.Validate = function () {
+        ithis.IsCheckPass = false;
+        ithis.PostValue = '';
+        var carImages = $('#CarImgsUl').find('li>dl');
+        var covername = ithis.GetCoverImageName();
+        if (carImages.length > 0) {
+            if (covername.length > 0) {
+                ithis.IsCheckPass = true;
+                $('#ErrorImage').hide();
+            }
+            else {
+                ithis.IsCheckPass = false;
+                $('#ErrorImage').text('请设置封面');
+                $('#ErrorImage').show();
+                return ithis.IsCheckPass;
+            }
+            var filelist = '';
+            var currentImageSrc = '';
+            //var isContainBase = false;
+            var proImageSrc = '';
+            for (var i = 0; i < carImages.length; i++) {
+                currentImageSrc = carImages.eq(i).find('img').attr('src');
+                if (currentImageSrc.indexOf('loading.gif') > -1 || currentImageSrc.indexOf('uploadFail.jpg') > -1 || currentImageSrc.indexOf(covername) > -1) continue;
+                proImageSrc = ithis.GetCarImageBaseSrc(currentImageSrc);
+                if (covername != proImageSrc) {
+                    filelist += proImageSrc + ',';
+                }
+            }
+            if (filelist.length > 0) {
+                filelist = '&filelist=' + filelist.substr(0, filelist.length - 1);
+            }
+            ithis.PostValue = '?covername=' + covername +  filelist + '&GUID=' + GUID;
+        }
+        else if (carImages.length == 0) {
+            ithis.IsCheckPass = true;
+        }
+        return ithis.IsCheckPass;
+    };
+
+    /*修改页面加载*/
+    this.loadModify = function (jsonCarImage) {
+        var carImageCount = 0;
+        for (var i = 0; i < jsonCarImage.length; i = i + 3) {
+            if (jsonCarImage[i + 2] == '50') {
+                ithis.AppendImageItem(i / 3, 0, jsonCarImage[i + 1]);
+                carImageCount++;
+                $('#div_batchUpload').hide();
+            } else if (jsonCarImage[i + 2] == '10') {
+                ithis.AppendImageItem(i / 3, 0, ithis.setFirstImgPre('f_', jsonCarImage[i + 1]));
+                $('#imageLi' + i / 3).find('dt').attr('class', 'click_bor');
+                carImageCount++;
+                $('#div_batchUpload').hide();
+            } else if (jsonCarImage[i + 2] == '20') {
+                /*登记证*/
+                $('#dj_certimg').attr('src', jsonCarImage[i + 1]);
+                $('#dj_ImgItem').show();
+                $('#form11').parent().hide();
+            } else if (jsonCarImage[i + 2] == '30') {
+                /*行驶证*/
+                $('#xs_certimg').attr('src', jsonCarImage[i + 1]);
+                $('#xs_ImgItem').show();
+                $('#form12').parent().hide();
+            } else if (jsonCarImage[i + 2] == '40') {
+                /*发票*/
+                $('#gc_certimg').attr('src', jsonCarImage[i + 1]);
+                $('#gc_ImgItem').show();
+                $('#form13').parent().hide();
+            }
+        }
+        $('#CarImgsUl').find('dd').show();
+        $('#CarImgsUl').find('.click_cover').hover(
+            function () { $(this).find('.cover').show(); },
+            function () { $(this).find('.cover').hide(); }
+        );
+        ithis.initFlashPlugin(1);
+        /*如果存在图片隐藏提示*/
+        ithis.showPrompt(true, false);
+        operationFlash();
+    };
+
+    /*显示或者隐藏提示框isEffect是否显示效果，isshow是展开还是隐藏*/
+    this.showPrompt = function (isEffect, isShow) {
+        var carImages = $('#CarImgsUl').find('li>dl');
+        var ImgPrompt = $('#prompt_img');
+        if (carImages.length == 0) {
+            ImgPrompt.css('display', '');
+        }
+        else {
+            if (isEffect) {
+                if (ImgPrompt.css('display') != 'none') {
+                    ImgPrompt.hide();
+                    ImgPrompt.css('left', '16px');
+                }
+            }
+            else {
+                if (isShow) {
+                    ImgPrompt.css('display', '');
+                }
+                else {
+                    ImgPrompt.css('display', 'none');
+                    ImgPrompt.css('left', '16px');
+                    ImgPrompt.hide();
+                }
+            }
+        }
+    };
+
+    /* 2014年6月26日添加 */
+    /* 获取从M端上传的图片信息 */
+    var tempImgList = []; /* 存储上一次获取的图片信息 存储格式：http://2sc0.autoimg.cn/usedcar/2scimg/2015/1/13/s_5027751067608100909.jpg
+                             新上传图片格式：http://2sc2.autoimg.cn/escimg/g5/M11/0E/32/wKgHzFWbKQiAMJVYAAEDnfoFK2A806.jpg  */
+    this.getImg = function () {
+        if (tempImgList.length === maxUpPicCount) {
+            window.clearInterval(pollInt);
+            pollInt = 0; /* 重置 pollInt 值 */
+        } else {
+            /* PC端发传图未完成的时候不让请求[因为可能正赶上flash在传图，这边也在请求会出事同一张图显示两次的情况]，在修改编辑车源图片未完成时不让请求,在设置首图的时候不能发出请求 */
+            if (GUID.length > 15 && !ithis.isUploading && !isEdit && !isUpdateIndex) {
+                $.ajax({
+                    type: 'get',
+                    dataType: 'json',
+                    url: uploadPicRecordUrl,
+                    data: { 'key': GUID, 'rd': Math.random(), 'ot': 'getpic' },
+                    success: function (data) {
+                        if (data !== undefined && data.imgcount > 0) {
+                            if (tempImgList.join() != data.list.join()) {
+                                currentGroup++;
+                                for (var i = 0, j = data.imgcount; i < j; i++) {
+                                    if (tempImgList.join().indexOf(data.list[i]) > -1) {
+                                        continue;
+                                    } else {
+                                        $('#uploadModel2').siblings().hide();
+                                        $('#uploadModel2').before('<li data-from="m" id="imageLi' + cUpLiIndex + '" group="' + currentGroup + '"><dl><dt class="click_cover" idt="' + cUpLiIndex + '"><img width="120" height="90" src="' + data.list[i] + '"><div style="display:none;" class="cover set-first" onclick="pc_UploadImage.setCoverReqestNew(' + cUpLiIndex + ');return false;">设为封面</div><i class="icon-first up-left"></i></dt><dd style=""><a href="javascript:void(0);" onclick="pc_UploadImage.editImageLi(' + cUpLiIndex + ');return false;">编辑</a></dd><dd style=""><a href="javascript:void(0);" onclick="pc_UploadImage.delImageLi(' + cUpLiIndex + ');return false;">删除</a></dd></dl></li>');
+                                        $('#uploadModel2').hide();
+                                    }
+                                }
+                                
+                                cUpLiIndex++;
+                                ithis.resetImgCount(); /* 重新设置flash可上传的图片数量 */
+                                tempImgList = data.list;
+                                operationFlash();
+
+                                $('#CarImgsUl').find('.click_cover').hover(
+                                    function () { $(this).find('.cover').show(); },
+                                    function () { $(this).find('.cover').hide(); }
+                                );
+                                ithis.showPrompt(true, false);
+                                $('#imgsCount_span').text($('#CarImgsUl').find('li').length - 2);
+                            }
+                        }
+                        var carImages = $('#CarImgsUl').find('li');
+                    }
+                });
+            }
+        }
+    }
+};
+/*上传图片类实例*/
+var pc_UploadImage = new PCUploadImage();
+pc_UploadImage.init();
+/*为flash上传提供  tagCode:flash调用命令标识   dParm1:参数1  dParm2:参数2*/
+function flashUpfile(tagCode, dParm1, dParm2) {
+    switch (tagCode) {
+        case 100: pc_UploadImage.readyfileUp(dParm1); break;
+        case 200: pc_UploadImage.fileUpStart(dParm1, dParm2); break;
+        case 300: pc_UploadImage.fileUpProgress(dParm1, dParm2); break;
+        case 400: pc_UploadImage.fileUpFinish(dParm1); break;
+        case 500: pc_UploadImage.allFileUpFinish(dParm1, dParm2); break;
+        case 600: pc_UploadImage.imgOverflow(dParm1); break;
+        case 700: pc_UploadImage.messageTip(dParm1); break;
+    }
+};

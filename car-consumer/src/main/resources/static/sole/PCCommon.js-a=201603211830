@@ -1,0 +1,190 @@
+
+/*获取当前点击事件的Object对象*/
+function getEvent() {
+    if (document.all) {
+        return window.event; //如果是ie
+    }
+    func = getEvent.caller;
+    while (func != null) {
+        var arg0 = func.arguments[0];
+        if (arg0) {
+            if ((arg0.constructor == Event || arg0.constructor == MouseEvent)
+|| (typeof (arg0) == "object" && arg0.preventDefault && arg0.stopPropagation)) {
+                return arg0;
+            }
+        }
+        func = func.caller;
+    }
+    return null;
+};
+
+var PCCommon = function () {
+    var ithis = this;
+    /*所有document事件,隐藏所有ul*/
+    var crtShowItem = null;
+    $(document).bind('click', function () {
+        var evt1 = getEvent();
+        var obj = evt1.srcElement || evt1.target;
+        if (obj.className == "gray99")
+            return;
+        if (location.href.toLowerCase().indexOf('.che168.com/car/modify/') > 0 && (obj.id == 'sh_RegistDateYear' || obj.id == 'sh_RegistDateMonth' || obj.id == 'YearClick')) {
+            IsBindClick(obj);
+        } else if (location.href.toLowerCase().indexOf('.che168.com/car/add/') > 0 || location.href.toLowerCase().indexOf('https://i.che168.com/js/.che168.com/salecar.aspx') > 0) {
+            IsBindClick(obj);
+        } else {
+            if (crtShowItem != null)
+                crtShowItem.hide();
+            crtShowItem = null;
+        }
+    });
+    var csh = false;
+    var IsBindClick = function (obj) {
+        if (obj.id.indexOf('sh_') == 0 || obj.parentNode.id.indexOf('sh_')==0) {
+            if (crtShowItem != null)
+                crtShowItem.hide();
+            crtShowItem = obj.id.indexOf('sh_') == 0 ? $('#' + obj.id + '_div') : $('#' + obj.parentNode.id + '_div')
+            
+            if (obj.className != 'bginputgray' && obj.className != 'bginputgraylong') {
+                crtShowItem.show();
+                /*加载车商汇链接参数，初始发车页面*/
+                if (crtShowItem.attr('id') == 'sh_sltCar_div' && Pspid > 0 && csh == false) {
+                    setTimeout("$('a[brandid='+PbrandId+']').trigger('click');", 100);        /* 触发品牌点击事件 */
+                    setTimeout("$('a[seriesid='+PseriesId+']').trigger('click');", 300);     /* 触发车系点击事件 */
+                    setTimeout("$('a[spid='+Pspid+']').attr('class','selected');", 500);     /* 触发车型点击事件 */
+                    csh = true;
+                }
+            }
+            if (obj.className == 'bginputgray' && obj.id == 'sh_displa') {
+                pcCommon.SpanRightTip($('#spanDispla'), '如未找到您的车辆车型，可手动填写一个');
+            }
+        }
+        else {
+            var flag = IsHideDiv(obj);
+            if (crtShowItem != null && flag==false) {
+                crtShowItem.hide();
+                crtShowItem = null;
+            }
+        }
+    }
+
+    var IsHideDiv = function (curObj) {
+        var flag = false;
+        while (curObj.parentNode) {
+            if (typeof curObj.parentNode.tagName == 'undefined' || curObj.parentNode.tagName.toLowerCase() == 'body') {
+                break;
+            }
+            else if (curObj.parentNode.id=='sh_sltCar_div') {
+                flag=true;
+                break;
+            }else{
+                curObj = curObj.parentNode;
+            }
+
+        }
+        return flag;
+    }
+    var rightCss = 'twright';
+    var wrongCss = 'twrong';
+    this.isShowTip = false;
+    /*正确提示*/
+    this.SpanRightTip = function (spanobj, tipText) {
+        if (ithis.isShowTip) return;
+        spanobj.text(tipText);
+        if (rightCss.length > 0)
+            spanobj.attr('class', rightCss);
+    };
+    /*错误提示*/
+    this.SpanWrongTip = function (spanobj, tipText) {
+        if (ithis.isShowTip) return;
+        spanobj.html(tipText);
+        if (wrongCss.length > 0)
+            spanobj.attr('class', wrongCss);
+    };
+
+    /*获取参数是否是免注册发车isfree*/
+    this.GetQueryString = function (sProp) {
+        var re = new RegExp("[&,?]" + sProp + "=([^\\&]*)", "i");
+        var a = re.exec(document.location.search);
+        if (a == null)
+            return "";
+        return a[1];
+    };
+
+    /*获取*/
+    this.CarScoreScale = new Array();
+    this.GetCarScoreScale = function () {
+        $.getJSON("https://i.che168.com/Handler/SaleCar/CarScoreScale.ashx", function (json) {
+            ithis.CarScoreScale = json;
+            if ($('#in_infoid').val() > 0 && typeof GetCarImageScore != 'undefined')
+                GetCarImageScore();
+        });
+    };
+
+    /* 计算车系下拉菜单高度：显示多少行，菜单ID，每行高度 */
+    this.ShowHeight = function (len, divId, singleHeight) {
+        var menuLen = $('#' + divId).find('dl').children().length;
+        var maxLen = $('#sh_CarSpec_div').find('dl').attr('maxsize');
+        if (menuLen > len) {
+            $('#' + divId).css('height', len * singleHeight + 'px');
+        } else {
+            $('#' + divId).css('height', menuLen * singleHeight + 'px');
+        }
+        if (divId == 'sh_CarSpec_div') {
+            if (maxLen >= 25) {
+                $('#' + divId).css('width', maxLen * 8 + 8 + 'px');
+            }
+            else {
+                $('#' + divId).css('width', '180px');
+            }
+        }
+    };
+
+    /* 输入框被选择后文字变成灰色 */
+    this.ChangeFontColor = function (obj, defaultValue) {
+        if (obj.val() != defaultValue) {
+            obj.css('color', 'black');
+        } else {
+            obj.css('color', '#838383');
+        }
+    };
+    this.ChangeFontColorSpan = function (obj, defaultValue) {
+        if (obj.text() != defaultValue) {
+            obj.css('color', 'black');
+        } else {
+            obj.css('color', '#838383');
+        }
+    }
+    this.JSLoad= function (args) {
+        s = document.createElement("script");
+        s.setAttribute("type", "text/javascript");
+        s.setAttribute("src", args.url);
+        s.onload = s.onreadystatechange = function () {
+            if (!s.readyState || s.readyState == "loaded" || s.readyState == "complete") {
+                if (typeof args.callback == "function") args.callback(this, args);
+                s.onload = s.onreadystatechange = null;
+                try {
+                    s.parentNode && s.parentNode.removeChild(s);
+                } catch (e) { }
+            }
+        };
+        document.getElementsByTagName("head")[0].appendChild(s);
+    };
+};
+/*公用类实例*/
+var pcCommon = new PCCommon();
+pcCommon.GetCarScoreScale();
+
+//积分滚动条
+this.SlideScore = function () {
+    if ($.browser.msie && $.browser.version == "6.0") {
+        var wtop = document.documentElement.scrollTop;
+        if (wtop == 0) wtop = document.body.scrollTop;
+        if (wtop > 300) {
+            $(".pop-right-fixed")[0].style.top = (wtop)-25+ "px";
+        }
+        else {
+            $(".pop-right-fixed")[0].style.top = "168px";
+        }
+    }
+};
+window.onscroll = SlideScore;

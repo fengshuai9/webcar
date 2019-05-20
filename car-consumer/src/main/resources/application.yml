@@ -9,7 +9,10 @@ spring:
     name: car-consumer
 
   main:
-    allow-bean-definition-overriding: true #������ͬkey�����beanDefinitionʵ���ĸ���
+
+
+    allow-bean-definition-overriding: true 
+
   thymeleaf:
     cache: false
     enabled: true
@@ -19,5 +22,4 @@ feign:
     enabled: false #禁用 熔断器
   httpclient:
     connection-timeout: 30000
-
 

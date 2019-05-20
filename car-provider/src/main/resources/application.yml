@@ -3,12 +3,11 @@
 server:
   port: 8083
 
+
 spring:
 
   application:
-    name:  car-provider
 
-  datasource:
     driver-class-name: com.mysql.jdbc.Driver
     url: jdbc:mysql://192.168.1.113/erzu?useUnicode=true&characterEncoding=UTF-8
     username: root
@@ -21,23 +20,14 @@ spring:
 
 
 mybatis:
+
   type-aliases-package: com.cn.model
 
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8080/eureka #默认注册中心地址
+      defaultZone: http://localhost:8080/eureka
   instance:
-    lease-renewal-interval-in-seconds: 1     #表示eureka client发送心跳给server端的频率。如果在leaseExpirationDurationInSeconds后，
-    #server端没有收到client的心跳，则将摘除该instance
-    lease-expiration-duration-in-seconds: 2 #表示eureka server至上一次收到client的心跳之后，等待下一次心跳的超时时间，
-    #在这个时间内若没收到下一次心跳，则将移除该instance
+    lease-renewal-interval-in-seconds: 1    
+    lease-expiration-duration-in-seconds: 2 
 
-jedis:
-  pool:
-    host: 127.0.0.1
-    port: 6379
-    config:
-      maxTotal: 100
-      maxIdle: 10
-      maxWaitMillis: 100000
