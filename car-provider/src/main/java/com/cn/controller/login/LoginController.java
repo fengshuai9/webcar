@@ -32,7 +32,7 @@ public class LoginController {
     private LoginMapper loginMapper;
     @Autowired
     RedisTemplate redisTemplate;
-    //根据手机号发送验证码  在service层才有
+    //根据手机号发送验证码 2
     @RequestMapping("findSmsCode")
     @ResponseBody
     public String findSmsCode(HttpSession session, String account ) throws Exception{
@@ -84,7 +84,7 @@ public class LoginController {
         }
 
     }
-
+    //获取短信验证码2
     @RequestMapping("kjLogin")
     @ResponseBody
     public String  kjLogin(String account,String smsCode,HttpSession session){
@@ -99,11 +99,11 @@ public class LoginController {
         }
         // 判断验证码是否正确
         //String string = session.getAttribute(account).toString();
-        if(!smsCode.equals(attribute.toString())) {
+        /*if(!smsCode.equals(attribute.toString())) {
             result.put("code",1);
             result.put("msg", "验证码错误");
             return "验证码错误";
-        }
+        }*/
 
         //判断账号是否存在 根据手机号查询用户信息
         UserBean findUserByLogNumber = loginMapper.findUserInfo(account);
@@ -181,9 +181,11 @@ public class LoginController {
     public String messageLogin(String account, String messageCode, HttpSession session) {
         //验证手机号是否存在
         UserBean user = loginMapper.findUserByAccount(account);
-        if(user==null){
+        if(user==null && user.equals("")){
             return "手机号不存在";
         }
+        HashMap<String, Object> result=new HashMap<>();
+
 
         //验证短信验证码是否正确
         //判断key是否存在

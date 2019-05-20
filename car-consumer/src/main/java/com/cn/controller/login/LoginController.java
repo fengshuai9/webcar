@@ -21,12 +21,13 @@ public class LoginController {
     private LoginService loginService;
 
 
-
+    //获取短信验证码2
     @RequestMapping("findSmsCode")
     @ResponseBody
     public String findSmsCode(String account ){
         return loginService.findSmsCode(account);
     }
+    //短信验证码登录2
     @RequestMapping("kjLogin")
     @ResponseBody
     public String  kjLogin(String account,String smsCode) {

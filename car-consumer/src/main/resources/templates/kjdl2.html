@@ -92,11 +92,10 @@
             },
             dataType:'json',
             success:function(data){
-                if(data.code !=0){
-                    $.messager.alert('提示',data.msg,'error');
 
-                }else{
-                    location.href='/page/show';
+                if (data == "登录成功") {
+
+                        location.href = "/page/toshow";
                 }
 
             }

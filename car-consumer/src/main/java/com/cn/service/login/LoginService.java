@@ -8,16 +8,19 @@ import java.util.HashMap;
 
 @FeignClient("car-provider")
 public interface LoginService {
-
+    //获取短信验证码2
     @RequestMapping("findSmsCode")
     String findSmsCode(@RequestParam String account);
+    //短信验证码登录2
     @RequestMapping("kjLogin")
     String kjLogin(@RequestParam String account, @RequestParam  String smsCode);
 
 
+
+    //获取短信验证码
     @RequestMapping("gainMessgerCode")
     String gainMessgerCode(@RequestParam String account);
-
+    //短信验证码登录
     @RequestMapping("messageLogin")
      String messageLogin(@RequestParam String account, @RequestParam String messageCode);
     //注册
